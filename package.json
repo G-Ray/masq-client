@@ -4,7 +4,7 @@
   "description": "Client library for Masq",
   "main": "clinent.js",
   "scripts": {
-    "start": "webpack",
+    "start": "http-server -p 9999 .",
     "build": "browserify src/client.js -o dist/bundle.js",
     "test": "standard"
   },
@@ -14,6 +14,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "http-server": "^0.10.0",
     "webpack": "^3.8.1"
   },
   "repository": {
