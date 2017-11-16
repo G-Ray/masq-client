@@ -17,13 +17,13 @@ npm start
 
 Add the client JS reference in your page:
 
-```
+```JavaScript
 <script type="text/javascript" src="src/client.js"></script>
 ```
 
 Using the client library in your app:
 
-```
+```JavaScript
 var masqStore = new MasqClient()
 
 // Your app data (store)
@@ -76,13 +76,13 @@ masqStore.onConnect().then(getRemoteData).then(function (res) {
 
 ## Initializing the client
 
-```
+```JavaScript
 var masqStore = new MasqClient()
 ```
 
 ## Storing all local data remotely
 
-```
+```JavaScript
 var appData = {}
 appData.date = Date.now() // 1510847132596
 appData.text = 'Hello'
@@ -96,7 +96,7 @@ masqStore.setAll(appData).then(function () {
 
 ## Getting all the remote data
 
-```
+```JavaScript
 masqStore.onConnect().then(function () {
   masqStore.getAll().then(function (data) {
     console.log(data) // prints { date: 1510847132596, text: "Hello" }
@@ -110,7 +110,7 @@ masqStore.onConnect().then(function () {
 
 ## Update (set) a specific key/value pair
 
-```
+```JavaScript
 masqStore.set('text', 'Hello world').then(function () {
   // success
 }).catch(function (err) {
@@ -120,7 +120,7 @@ masqStore.set('text', 'Hello world').then(function () {
 
 ## Get the value for a specific key
 
-```
+```JavaScript
 masqStore.get('text').then(function (res) {
   console.log(res) // prints "Hello world"
 }).catch(function (err) {
@@ -130,7 +130,7 @@ masqStore.get('text').then(function (res) {
 
 ## Delete a specific key
 
-```
+```JavaScript
 masqStore.del('date').then(function () {
   // success, we have deleted the key "date"
   // let's fetch all the remote data to take a look at what's left
@@ -146,7 +146,7 @@ masqStore.del('date').then(function () {
 
 ## Delete (clear) all the remote data
 
-```
+```JavaScript
 masqStore.clear().then(function() {
   masqStore.getAll().then(function (data) {
     console.log(data) // prints {}
