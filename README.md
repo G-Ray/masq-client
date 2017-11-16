@@ -80,7 +80,7 @@ masqStore.onConnect().then(getRemoteData).then(function (res) {
 var masqStore = new MasqClient()
 ```
 
-## Storing all local data remotely
+## Storing a local data object remotely
 
 ```JavaScript
 var appData = {}
