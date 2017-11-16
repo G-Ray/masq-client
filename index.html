@@ -7,6 +7,33 @@
 </script>
 </head>
 <body></body>
-<script type="text/javascript" src="dist/bundle.js"></script>
+<script type="text/javascript" src="src/client.js"></script>
+<script>
+    var hubURL = 'http://localhost:8080'
+    var storage = new MasqClient(hubURL)
 
+    // App data
+    var appData = {}
+
+    // Load all data on initial connect
+    var getData = function () {
+      return storage.getData()
+    }
+    storage.onConnect().then(getData).then(function (res) {
+      appData = res
+      console.log('Loaded remote app data:', appData)
+
+      // add some data
+      storage.set('key1', 'val1').then(function () {
+        console.log('Wrote data!')
+      })
+
+      // retrieve the same data
+      storage.get('key1').then(function (res) {
+        console.log('Got data for key1:', res)
+      })
+    })['catch'](function (err) {
+      console.log(err)
+    })
+</script>
 </html>

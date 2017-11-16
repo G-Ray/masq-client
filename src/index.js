@@ -1,9 +1,9 @@
 // Client component
-var CrossStorageClient = require('./client.js')
+var MasqClient = require('./client.js')
 
 var hubURL = 'http://localhost:8080'
 
-var storage = new CrossStorageClient(hubURL)
+var storage = new MasqClient(hubURL)
 
 var setKeys = function () {
   return storage.set('key1', 'foo').then(function () {
