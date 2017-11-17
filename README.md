@@ -1,4 +1,4 @@
-# Masq.js
+# Masq Client
 
 Promise-based client library for Qwant Masq. It allows applications to connect to the Masq Hub (central data manager) to store and retrieve application data.
 
@@ -7,7 +7,7 @@ Promise-based client library for Qwant Masq. It allows applications to connect t
 ## Developer
 
 ```
-git clone https://git.qwant.ninja/masq/client.git
+git clone https://github.com/QwantResearch/masq-client.git
 cd client
 npm install
 npm start
