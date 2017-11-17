@@ -1,6 +1,6 @@
 # Masq Client
 
-Promise-based client library for Qwant Masq. It allows applications to connect to the Masq Hub (central data manager) to store and retrieve application data.
+Promise-based client library for Qwant Masq. It allows applications to connect to the [Masq Hub](https://github.com/QwantResearch/masq-hub) (central data manager) to store and retrieve application data.
 
 # Install
 
