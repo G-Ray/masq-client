@@ -17,8 +17,20 @@ npm start
 
 Add the client JS reference in your page:
 
-```JavaScript
-<script type="text/javascript" src="src/client.js"></script>
+```HTML
+<script type="text/javascript" src="dist/masq.js"></script>
+```
+
+Or the minified version:
+
+```HTML
+<script type="text/javascript" src="dist/masq.min.js"></script>
+```
+
+You can also use the online version hosted on Github pages:
+
+```HTML
+<script type="text/javascript" src="https://qwantresearch.github.io/masq-client/dist/masq.min.js"></script>
 ```
 
 Using the client library in your app:
