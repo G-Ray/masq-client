@@ -24,6 +24,10 @@ Add the client JS reference in your page:
 Using the client library in your app:
 
 ```JavaScript
+// Define the hub URL (where the data will be persisted)
+var hubURL = 'https://qwantresearch.github.io/masq-hub/'
+
+// Initialize the store
 var masqStore = new MasqClient()
 
 // Your app data (store)
