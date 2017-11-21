@@ -39,6 +39,7 @@
    * @property {Window}   _hub       The hub window
    */
   function MasqClient (url, opts) {
+    url = url || 'http://localhost:8080'
     opts = opts || {}
 
     this._id = MasqClient._generateUUID()
@@ -210,6 +211,8 @@
   }
 
   /**
+   * Clears all the remote store for the current origin.
+   *
    * Returns a promise that, when resolved, indicates that all localStorage
    * data has been cleared.
    *
@@ -220,25 +223,28 @@
   }
 
   /**
+   * Gets all the remote data for the current origin.
+   *
    * Returns a promise that, when resolved, passes an array of all keys
    * currently in storage.
    *
    * @returns {Promise} A promise that is settled on hub response or timeout
    */
-  MasqClient.prototype.getData = function () {
-    return this._request('getData')
+  MasqClient.prototype.getAll = function () {
+    return this._request('getAll')
   }
 
   /**
-   * Sets all data for the current origin. Returns a promise that is fulfilled on
-   * success, or rejected if any errors setting the key occurred, or the request
-   * timed out.
+   * Sets all data for the current origin.
+   *
+   * Returns a promise that, when resolved, passes an array of all keys
+   * currently in storage.
    *
    * @param   {object}  data   The data object to set
    * @returns {Promise} A promise that is settled on hub response or timeout
    */
-  MasqClient.prototype.setData = function (data) {
-    return this._request('setData', data)
+  MasqClient.prototype.setAll = function (data) {
+    return this._request('setAll', data)
   }
 
   /**
@@ -279,7 +285,7 @@
       var i, origin, error, response
 
       // Ignore invalid messages or those after the client has closed
-      if (client._closed || !message.data || typeof message.data !== 'string') {
+      if (client._closed || !message.data) {
         return
       }
 
@@ -303,7 +309,7 @@
       }
 
       // Handle initial connection
-      if (!message.data['cross-storage:'] && !client._connected) {
+      if (message.data['cross-storage'] && !client._connected) {
         client._connected = true
         if (!client._requests.connect) return
 
