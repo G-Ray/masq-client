@@ -2,10 +2,10 @@
   "name": "masq.js",
   "version": "0.0.1",
   "description": "Client library for Masq",
-  "main": "clinent.js",
+  "main": "index.js",
   "scripts": {
     "start": "http-server -p 9999 .",
-    "build": "browserify src/client.js -o dist/bundle.js",
+    "build": "browserify src/index.js -o dist/bundle.js",
     "test": "standard"
   },
   "author": {

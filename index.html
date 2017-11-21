@@ -22,7 +22,7 @@ var getRemoteData = function () {
 }
 masqStore.onConnect().then(getRemoteData).then(function (res) {
   // update your local store
-  appData = res
+  appData = res || appData
   console.log('Loaded remote app state:', appData)
 
   // Add some data in case it's the first time

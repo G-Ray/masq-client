@@ -157,3 +157,7 @@ masqStore.clear().then(function() {
   console.log(err)
 })
 ```
+
+## License
+
+Apache-2.0
