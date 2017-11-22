@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "http-server -p 9999 .",
-    "build": "./node_modules/.bin/uglifyjs src/index.js -o dist/masq.min.js --compress --mangle -- "
+    "build": "./node_modules/.bin/browserify src/index.js --standalone MasqClient > dist/masq.js && ./node_modules/.bin/uglifyjs dist/masq.js -o dist/masq.min.js --compress --mangle -- "
   },
   "author": {
     "name": "Andrei Sambra",
@@ -13,6 +13,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^14.5.0",
     "http-server": "^0.10.0",
     "uglify-js": "^3.1.10"
   },
