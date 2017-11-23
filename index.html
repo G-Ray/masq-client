@@ -9,9 +9,10 @@
 <body>
   <h1>Masq Client</h1>
 </body>
+<!-- <script type="text/javascript" src="dist/masq.js"></script> -->
 <script type="text/javascript" src="dist/masq.js"></script>
 <script>
-var masqStore = new MasqClient()
+var masqStore = new MasqClient('http://localhost:8081/')
 
 // Your app data (store)
 var appData = {}
@@ -56,6 +57,10 @@ masqStore.onConnect().then(getRemoteData).then(function (res) {
   })
 }).catch(function (err) {
   console.log(err)
+})
+
+document.addEventListener('Sync', function (event) {
+  console.log('New sync event!')
 })
 </script>
 </html>

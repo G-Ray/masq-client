@@ -247,6 +247,18 @@
   }
 
   /**
+   * Gets all the remote metadata for the current origin.
+   *
+   * Returns a promise that, when resolved, passes an array of all keys
+   * currently in storage.
+   *
+   * @returns {Promise} A promise that is settled on hub response or timeout
+   */
+  MasqClient.prototype.getMeta = function () {
+    return this._request('getMeta')
+  }
+
+  /**
    * Deletes the iframe and sets the connected state to false. The client can
    * no longer be used after being invoked.
    */
@@ -329,6 +341,11 @@
 
       if (!response.client) return
 
+      if (message.data['sync']) {
+        var syncEvt = new CustomEvent('Sync')
+        document.dispatchEvent(syncEvt)
+      }
+
       if (client._requests[response.client]) {
         client._requests[response.client](response.error, response.result)
       }
@@ -360,7 +377,7 @@
       if (!client._hub) return
 
       client._hub.postMessage({'cross-storage': 'poll'}, targetOrigin)
-    }, 1000)
+    }, 100)
   }
 
   /**
