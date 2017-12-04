@@ -39,7 +39,7 @@
    * @property {Window}   _hub       The hub window
    */
   function MasqClient (url, opts) {
-    url = url || 'https://qwantresearch.github.io/masq-hub/'
+    url = url || 'https://qwantresearch.github.io/masq-store/'
     opts = opts || {}
 
     this._id = MasqClient._generateUUID()
