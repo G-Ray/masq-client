@@ -1,5 +1,9 @@
 # Masq Client
 
+[![](https://img.shields.io/badge/project-Masq-7C4DFF.svg?style=flat-square)](https://github.com/QwantResearch/masq-store)
+
+![Masq Logo](https://i.imgur.com/qZ3dq0Q.png)
+
 Promise-based client library for Qwant Masq. It allows applications to connect to the [Masq Hub](https://github.com/QwantResearch/masq-hub) (central data manager) to store and retrieve application data.
 
 # Install
