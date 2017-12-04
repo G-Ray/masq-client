@@ -7,11 +7,15 @@
 </script>
 </head>
 <body>
-  <h1>Masq Client</h1>
+  <h1>ACME Masq App</h1>
+  <p>
+    <pre id="data"></pre>
+  </p>
 </body>
 <script type="text/javascript" src="dist/masq.js"></script>
 <script>
-var masqStore = new MasqClient()
+var pre = document.getElementById('data')
+var masqStore = new MasqClient('http://localhost:8081/')
 
 // Your app data (store)
 var appData = {}
@@ -23,39 +27,21 @@ var getRemoteData = function () {
 masqStore.onConnect().then(getRemoteData).then(function (res) {
   // update your local store
   appData = res || appData
-  console.log('Loaded remote app state:', appData)
-
-  // Add some data in case it's the first time
-  if (!appData['counter']) {
-    appData['counter'] = 0
-  }
-
-  // Update a few values
-  appData['counter']++
-  appData['date'] = Date.now()
-
-  // persist all local data remotely
-  masqStore.setAll(appData).then(function () {
-    console.log('Wrote updated value for key "counter":', appData['counter'])
-
-    // retrieve the remote state for one particular key (e.g. counter)
-    masqStore.get('counter').then(function (res) {
-      console.log('Got remote value for key "counter":', res)
-
-      if (appData['counter'] === 2) {
-        // delete the counter data remotely
-        masqStore.del('counter').then(getRemoteData).then(function (res) {
-          console.log('Loaded remote app state:', res)
-          // clear remote store
-          masqStore.clear().then(getRemoteData).then(function (res) {
-            console.log('Loaded remote app state:', res)
-          })
-        })
-      }
-    })
-  })
+  console.log('Loaded app state:', appData)
+  pre.innerText = JSON.stringify(appData)
 }).catch(function (err) {
   console.log(err)
+})
+
+document.addEventListener('Sync', function (event) {
+  if (masqStore) {
+    masqStore.getAll().then(function (res) {
+      // update your local store
+      appData = res || appData
+      console.log('Updated app state after sync:', appData)
+      pre.innerText = JSON.stringify(appData)
+    })
+  }
 })
 </script>
 </html>
