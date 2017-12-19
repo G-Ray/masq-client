@@ -1,9 +1,9 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MasqClient = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 ;(function (root) {
   /**
-   * Forked from https://github.com/zendesk/cross-storage
+   * Forked from https://gitstore.com/zendesk/cross-storage
    *
-   * Constructs a new cross storage client given the url to a hub. By default,
+   * Constructs a new cross storage client given the url to a store. By default,
    * an iframe is created within the document body that points to the url. It
    * also accepts an options object, which may include a timeout, frameId, and
    * promise. The timeout, in milliseconds, is applied to each request and
@@ -13,33 +13,37 @@
    * will be used instead of the default window.Promise.
    *
    * @example
-   * var storage = new MasqClient('https://store.example.com/hub.html');
+   * var storage = new MasqClient('https://store.example.com/store.html');
    *
    * @example
-   * var storage = new MasqClient('https://store.example.com/hub.html', {
+   * var storage = new MasqClient('https://store.example.com/store.html', {
    *   timeout: 5000,
    *   frameId: 'storageFrame'
    * });
    *
    * @constructor
    *
-   * @param {string} url    The url to a cross storage hub
+   * @param {string} url    The url to a cross storage store
    * @param {object} [opts] An optional object containing additional options,
    *                        including timeout, frameId, and promise
    *
+   * @property {string}   _endpoint  Default endpoint URL for the store
    * @property {string}   _id        A UUID v4 id
    * @property {function} _promise   The Promise object to use
-   * @property {string}   _frameId   The id of the iFrame pointing to the hub url
-   * @property {string}   _origin    The hub's origin
+   * @property {string}   _frameId   The id of the iFrame pointing to the store url
+   * @property {string}   _origin    The store's origin
    * @property {object}   _requests  Mapping of request ids to callbacks
    * @property {bool}     _connected Whether or not it has connected
    * @property {bool}     _closed    Whether or not the client has closed
    * @property {int}      _count     Number of requests sent
    * @property {function} _listener  The listener added to the window
-   * @property {Window}   _hub       The hub window
+   * @property {Window}   _store     The store window
+   * @property {Window}   _regwindow The app registration window
    */
   function MasqClient (url, opts) {
-    url = url || 'https://qwantresearch.github.io/masq-store/'
+    this._endpoint = 'https://qwantresearch.gitstore.io/masq-store/'
+
+    url = url || this._endpoint
     opts = opts || {}
 
     this._id = MasqClient._generateUUID()
@@ -52,6 +56,7 @@
     this._count = 0
     this._timeout = opts.timeout || 5000
     this._listener = null
+    this._regwindow = null
 
     this._installListener()
 
@@ -60,14 +65,14 @@
       frame = document.getElementById(opts.frameId)
     }
 
-    // If using a passed iframe, poll the hub for a ready message
+    // If using a passed iframe, poll the store for a ready message
     if (frame) {
       this._poll()
     }
 
     // Create the frame if not found or specified
     frame = frame || this._createFrame(url)
-    this._hub = frame.contentWindow
+    this._store = frame.contentWindow
   }
 
   /**
@@ -91,7 +96,7 @@
    * 443 over https. Defaults to the origin of window.location if passed a
    * relative path.
    *
-   * @param   {string} url The url to a cross storage hub
+   * @param   {string} url The url to a cross storage store
    * @returns {string} The origin of the url
    */
   MasqClient._getOrigin = function (url) {
@@ -132,7 +137,7 @@
 
   /**
    * Returns a promise that is fulfilled when a connection has been established
-   * with the cross storage hub. Its use is required to avoid sending any
+   * with the cross storage store. Its use is required to avoid sending any
    * requests prior to initialization being complete.
    *
    * @returns {Promise} A promise that is resolved on connect
@@ -166,13 +171,70 @@
   }
 
   /**
+   * Registers an app with the store.
+   *
+   * @param   {object}  params   Parameters that describe the app
+   * @returns {Promise} A promise that is settled on app registration status
+   */
+  MasqClient.prototype.registerApp = function (params) {
+    return new Promise(function (resolve, reject) {
+      if (this._regwindow === undefined || this._regwindow.closed) {
+        var w = 400
+        var h = 600
+
+        params.endpoint = params.endpoint || this._endpoint
+        if (!params.url) {
+          reject(new Error('No app URL provided to registerApp()'))
+        }
+        var url = params.endpoint + '?add=1&appUrl=' + encodeURIComponent(params.url)
+        if (params.title) {
+          url += '&title=' + encodeURIComponent(params.title)
+        }
+        if (params.desc) {
+          url += '&desc=' + encodeURIComponent(params.desc)
+        }
+        if (params.icon) {
+          url += '&icon=' + encodeURIComponent(params.icon)
+        }
+
+        var dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screen.left
+        var dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screen.top
+
+        var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : window.screen.width
+        var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : window.screen.height
+
+        var left = ((width / 2) - (w / 2)) + dualScreenLeft
+        var top = ((height / 2) - (h / 2)) + dualScreenTop
+        this._regwindow = window.open(url, '', 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left)
+
+        // Puts focus on the newWindow
+        if (window.focus) {
+          this._regwindow.focus()
+        }
+
+        // wrap onunload in a load event to avoid it being triggered too early
+        window.addEventListener('message', function (e) {
+          console.log('closing child', e)
+          if (e.data === 'REGISTRATIONFINISHED') {
+            resolve(e)
+          }
+        }, false)
+        // this._regwindow.addEventListener('unload', function (e) {
+        //   e.preventDefault()
+        //   resolve(e)
+        // }, false)
+      }
+    })
+  }
+
+  /**
    * Sets a key to the specified value. Returns a promise that is fulfilled on
    * success, or rejected if any errors setting the key occurred, or the request
    * timed out.
    *
    * @param   {string}  key   The key to set
    * @param   {*}       value The value to assign
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
   MasqClient.prototype.set = function (key, value) {
     return this._request('set', {
@@ -183,13 +245,13 @@
 
   /**
    * Accepts one or more keys for which to retrieve their values. Returns a
-   * promise that is settled on hub response or timeout. On success, it is
+   * promise that is settled on store response or timeout. On success, it is
    * fulfilled with the value of the key if only passed a single argument.
    * Otherwise it's resolved with an array of values. On failure, it is rejected
    * with the corresponding error message.
    *
    * @param   {...string} key The key to retrieve
-   * @returns {Promise}   A promise that is settled on hub response or timeout
+   * @returns {Promise}   A promise that is settled on store response or timeout
    */
   MasqClient.prototype.get = function (key) {
     var args = Array.prototype.slice.call(arguments)
@@ -199,10 +261,10 @@
 
   /**
    * Accepts one or more keys for deletion. Returns a promise that is settled on
-   * hub response or timeout.
+   * store response or timeout.
    *
    * @param   {...string} key The key to delete
-   * @returns {Promise}   A promise that is settled on hub response or timeout
+   * @returns {Promise}   A promise that is settled on store response or timeout
    */
   MasqClient.prototype.del = function () {
     var args = Array.prototype.slice.call(arguments)
@@ -216,7 +278,7 @@
    * Returns a promise that, when resolved, indicates that all localStorage
    * data has been cleared.
    *
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
   MasqClient.prototype.clear = function () {
     return this._request('clear')
@@ -228,7 +290,7 @@
    * Returns a promise that, when resolved, passes an array of all keys
    * currently in storage.
    *
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
   MasqClient.prototype.getAll = function () {
     return this._request('getAll')
@@ -241,22 +303,22 @@
    * currently in storage.
    *
    * @param   {object}  data   The data object to set
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
   MasqClient.prototype.setAll = function (data) {
     return this._request('setAll', data)
   }
 
   /**
-   * Gets all the remote metadata for the current origin.
+   * Gets the current user's public profile data.
    *
    * Returns a promise that, when resolved, passes an array of all keys
    * currently in storage.
    *
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
-  MasqClient.prototype.getMeta = function () {
-    return this._request('getMeta')
+  MasqClient.prototype.user = function () {
+    return this._request('user')
   }
 
   /**
@@ -307,12 +369,12 @@
       // Ignore messages not from the correct origin
       if (origin !== client._origin) return
 
-      // LocalStorage isn't available in the hub
+      // LocalStorage isn't available in the store
       if (message.data['cross-storage'] === 'unavailable') {
         if (!client._closed) client.close()
         if (!client._requests.connect) return
 
-        error = new Error('Closing client. Could not access localStorage in hub.')
+        error = new Error('Closing client. Could not access localStorage in store.')
         for (i = 0; i < client._requests.connect.length; i++) {
           client._requests.connect[i](error)
         }
@@ -322,6 +384,10 @@
 
       // Handle initial connection
       if (message.data['cross-storage'] && !client._connected) {
+        if (message.data['cross-storage'] === 'listening') {
+          client._init()
+          return
+        }
         client._connected = true
         if (!client._requests.connect) return
 
@@ -342,6 +408,7 @@
 
       if (!response.client) return
 
+      // Tell the app the we updated the data following a sync event
       if (message.data['sync']) {
         var syncEvt = new CustomEvent('Sync')
         document.dispatchEvent(syncEvt)
@@ -362,7 +429,28 @@
 
   /**
    * Invoked when a frame id was passed to the client, rather than allowing
-   * the client to create its own iframe. Polls the hub for a ready event to
+   * the client to create its own iframe. Polls the store for a ready event to
+   * establish a connected state.
+   */
+  MasqClient.prototype._init = function () {
+    var client, interval, targetOrigin
+
+    client = this
+
+    // postMessage requires that the target origin be set to "*" for "file://"
+    targetOrigin = (client._origin === 'file://') ? '*' : client._origin
+
+    interval = setInterval(function () {
+      if (client._connected) return clearInterval(interval)
+      if (!client._store) return
+
+      client._store.postMessage({'cross-storage': 'init'}, targetOrigin)
+    }, 100)
+  }
+
+  /**
+   * Invoked when a frame id was passed to the client, rather than allowing
+   * the client to create its own iframe. Polls the store for a ready event to
    * establish a connected state.
    */
   MasqClient.prototype._poll = function () {
@@ -375,20 +463,20 @@
 
     interval = setInterval(function () {
       if (client._connected) return clearInterval(interval)
-      if (!client._hub) return
+      if (!client._store) return
 
-      client._hub.postMessage({'cross-storage': 'poll'}, targetOrigin)
+      client._store.postMessage({'cross-storage': 'poll'}, targetOrigin)
     }, 100)
   }
 
   /**
-   * Creates a new iFrame containing the hub. Applies the necessary styles to
+   * Creates a new iFrame containing the store. Applies the necessary styles to
    * hide the element from view, prior to adding it to the document body.
    * Returns the created element.
    *
    * @private
    *
-   * @param  {string}            url The url to the hub
+   * @param  {string}            url The url to the store
    * returns {HTMLIFrameElement} The iFrame element itself
    */
   MasqClient.prototype._createFrame = function (url) {
@@ -411,7 +499,7 @@
   }
 
   /**
-   * Sends a message containing the given method and params to the hub. Stores
+   * Sends a message containing the given method and params to the store. Stores
    * a callback in the _requests object for later invocation on message, or
    * deletion on timeout. Returns a promise that is settled in either instance.
    *
@@ -419,7 +507,7 @@
    *
    * @param   {string}  method The method to invoke
    * @param   {*}       params The arguments to pass
-   * @returns {Promise} A promise that is settled on hub response or timeout
+   * @returns {Promise} A promise that is settled on store response or timeout
    */
   MasqClient.prototype._request = function (method, params) {
     var req, client
@@ -467,7 +555,7 @@
       targetOrigin = (client._origin === 'file://') ? '*' : client._origin
 
       // Send  message
-      client._hub.postMessage(req, targetOrigin)
+      client._store.postMessage(req, targetOrigin)
 
       // Restore original toJSON
       if (originalToJSON) {
