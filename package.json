@@ -1,6 +1,6 @@
 {
-  "name": "masq.js",
-  "version": "0.0.1",
+  "name": "masq-client",
+  "version": "1.0.0",
   "description": "Client library for Masq",
   "main": "index.js",
   "scripts": {
