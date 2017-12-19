@@ -2,9 +2,6 @@
 <html lang="en">
 <head>
 <title>Masq Storage Client</title>
-<script>
-    
-</script>
 </head>
 <body>
   <h1>ACME Masq App</h1>
@@ -15,8 +12,16 @@
 <script type="text/javascript" src="dist/masq.js"></script>
 <script>
 var pre = document.getElementById('data')
-// var masqStore = new MasqClient('http://localhost:8081/')
-var masqStore = new MasqClient()
+var STORE = 'http://127.0.0.1:8081/'
+var appURL = window.location.origin + window.location.pathname
+var regParams = {
+  endpoint: STORE,
+  url: appURL,
+  title: 'ACME app',
+  desc: 'A generic app that uses Masq for storage',
+  icon: 'http://127.0.0.1:8081/img/logo.png'
+}
+var masqStore = new MasqClient(STORE)
 
 // Your app data (store)
 var appData = {}
@@ -31,7 +36,17 @@ masqStore.onConnect().then(getRemoteData).then(function (res) {
   console.log('Loaded app state:', appData)
   pre.innerText = JSON.stringify(appData)
 }).catch(function (err) {
-  console.log(err)
+  if (err.message === 'UNREGISTERED') {
+    var errMsg = document.createElement('span')
+    errMsg.innerHTML = 'Click <a href="#" id="register-app">here</a> to register your application'
+    document.body.appendChild(errMsg)
+    document.getElementById('register-app').addEventListener('click', function () {
+      masqStore.registerApp(regParams).then(function (e) {
+        window.location.reload()
+      })
+    })
+  }
+  console.log(err.message)
 })
 
 document.addEventListener('Sync', function (event) {
