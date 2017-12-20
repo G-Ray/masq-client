@@ -214,15 +214,10 @@
 
         // wrap onunload in a load event to avoid it being triggered too early
         window.addEventListener('message', function (e) {
-          console.log('closing child', e)
           if (e.data === 'REGISTRATIONFINISHED') {
             resolve(e)
           }
         }, false)
-        // this._regwindow.addEventListener('unload', function (e) {
-        //   e.preventDefault()
-        //   resolve(e)
-        // }, false)
       }
     })
   }

@@ -43,10 +43,13 @@ Using the client library in your app:
 // Define the hub URL (where the data will be persisted)
 var hubURL = 'https://qwantresearch.github.io/masq-hub/'
 
-// Initialize the store
-var masqStore = new MasqClient()
+// The button that is displayed in case the user needs to register the app
+var regButton = document.getElementById('reg-button')
 
-// Your app data (store)
+// Initialize the store
+var masqStore = new MasqClient(hubURL)
+
+// Your app data (in-memory state)
 var appData = {}
 
 // Load all remote app state on initial connect
@@ -88,7 +91,25 @@ masqStore.onConnect().then(getRemoteData).then(function (res) {
     })
   })
 }).catch(function (err) {
-  console.log(err)
+  if (err.message === 'UNREGISTERED') {
+    // Parameters used for app registration
+    var regParams = {
+      endpoint: STORE,
+      url: appURL,
+      title: 'ACME app',
+      desc: 'A generic app that uses Masq for storage',
+      icon: 'http://127.0.0.1:8081/img/logo.png'
+    }
+    // add listener
+    regButton.addEventListener('click', function () {
+      masqStore.registerApp(regParams).then(function () {
+        // init Masq store again as well as the app
+        masqStore = new MasqClient(hubURL)
+        // or just reload the window
+        // window.location.reload()
+      })
+    })
+  }
 })
 ```
 

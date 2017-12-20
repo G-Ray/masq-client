@@ -12,52 +12,69 @@
 <script type="text/javascript" src="dist/masq.js"></script>
 <script>
 var pre = document.getElementById('data')
-var STORE = 'http://127.0.0.1:8081/'
+var STORE = 'http://localhost:8081/'
 var appURL = window.location.origin + window.location.pathname
 var regParams = {
   endpoint: STORE,
   url: appURL,
   title: 'ACME app',
   desc: 'A generic app that uses Masq for storage',
-  icon: 'http://127.0.0.1:8081/img/logo.png'
+  icon: 'http://localhost:8081/img/logo.png'
 }
-var masqStore = new MasqClient(STORE)
+
+var masqStore = new window.MasqClient(STORE)
 
 // Your app data (store)
 var appData = {}
 
 // Load all remote app state on initial connect
 var getRemoteData = function () {
-  return masqStore.getAll()
-}
-masqStore.onConnect().then(getRemoteData).then(function (res) {
-  // update your local store
-  appData = res || appData
-  console.log('Loaded app state:', appData)
-  pre.innerText = JSON.stringify(appData)
-}).catch(function (err) {
-  if (err.message === 'UNREGISTERED') {
-    var errMsg = document.createElement('span')
-    errMsg.innerHTML = 'Click <a href="#" id="register-app">here</a> to register your application'
-    document.body.appendChild(errMsg)
-    document.getElementById('register-app').addEventListener('click', function () {
-      masqStore.registerApp(regParams).then(function (e) {
-        window.location.reload()
+  return masqStore.getAll().then(function (res) {
+    var errMsg = document.getElementById('err-msg')
+    if (errMsg) {
+      errMsg.remove()
+    }
+    // update your local store
+    appData = res || appData
+    console.log('Loaded app state:', appData)
+    pre.innerText = JSON.stringify(appData)
+  }).catch(function (err) {
+    if (err.message === 'UNREGISTERED') {
+      var errMsg = document.createElement('span')
+      errMsg.id = 'err-msg'
+      errMsg.innerHTML = 'Click <a href="#" id="register-app">here</a> to register your application with Masq'
+      document.body.appendChild(errMsg)
+      document.getElementById('register-app').addEventListener('click', function () {
+        masqStore.registerApp(regParams).then(function (e) {
+          // window.location.reload()
+          errMsg.remove()
+          getRemoteData()
+        })
       })
-    })
-  }
-  console.log(err.message)
-})
+    }
+    console.log(err.message)
+  })
+}
+
+masqStore.onConnect().then(getRemoteData)
 
 document.addEventListener('Sync', function (event) {
+  console.log('Sync event!')
   if (masqStore) {
     masqStore.getAll().then(function (res) {
-      // update your local store
+        // update your local store
       appData = res || appData
-      console.log('Updated app state after sync:', appData)
       pre.innerText = JSON.stringify(appData)
     })
   }
 })
+
+var setAll = function (obj) {
+  masqStore.setAll(obj).then(function () {
+    pre.innerText = JSON.stringify(obj)
+  }).catch(function (err) {
+    console.log(err)
+  })
+}
 </script>
 </html>
