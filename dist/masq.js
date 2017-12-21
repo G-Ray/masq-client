@@ -223,6 +223,15 @@
   }
 
   /**
+   * Force sync for the app.
+   *
+   * @returns {Promise} A promise that is settled on store response or timeout
+   */
+  MasqClient.prototype.sync = function () {
+    return this._request('sync')
+  }
+
+  /**
    * Sets a key to the specified value. Returns a promise that is fulfilled on
    * success, or rejected if any errors setting the key occurred, or the request
    * timed out.

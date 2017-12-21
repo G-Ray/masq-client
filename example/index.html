@@ -9,10 +9,10 @@
     <pre id="data"></pre>
   </p>
 </body>
-<script type="text/javascript" src="dist/masq.js"></script>
+<script type="text/javascript" src="../dist/masq.js"></script>
 <script>
 var pre = document.getElementById('data')
-var STORE = 'http://localhost:8081/'
+var STORE = 'https://sync-beta.qwantresearch.com'
 var appURL = window.location.origin + window.location.pathname
 var regParams = {
   endpoint: STORE,
@@ -26,8 +26,6 @@ var masqStore = new window.MasqClient(STORE)
 
 // Your app data (store)
 var appData = {}
-// Connect to the store
-masqStore.onConnect().then(getRemoteData)
 
 // Register app if it's the first time we use it
 var register = function () {
@@ -83,5 +81,8 @@ var setAll = function (obj) {
     console.log(err)
   })
 }
+
+// Initialize the store
+masqStore.onConnect().then(getRemoteData)
 </script>
 </html>

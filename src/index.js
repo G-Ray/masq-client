@@ -40,7 +40,7 @@
    * @property {Window}   _regwindow The app registration window
    */
   function MasqClient (url, opts) {
-    this._endpoint = 'https://qwantresearch.gitstore.io/masq-store/'
+    this._endpoint = 'https://sync-beta.qwantresearch.com/'
 
     url = url || this._endpoint
     opts = opts || {}
