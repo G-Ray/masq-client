@@ -41,77 +41,13 @@ Using the client library in your app:
 
 ```JavaScript
 // Define the hub URL (where the data will be persisted)
-var hubURL = 'https://qwantresearch.github.io/masq-hub/'
-
-// The button that is displayed in case the user needs to register the app
-var regButton = document.getElementById('reg-button')
+var storeURL = 'https://sync-beta.qwantresearch.com/'
 
 // Initialize the store
-var masqStore = new MasqClient(hubURL)
-
-// Your app data (in-memory state)
-var appData = {}
-
-// Load all remote app state on initial connect
-var getRemoteData = function () {
-  return masqStore.getAll()
-}
-masqStore.onConnect().then(getRemoteData).then(function (res) {
-  // update your local store
-  appData = res
-  console.log('Loaded remote app state:', appData)
-
-  // Add some data in case it's the first time
-  if (!appData['counter']) {
-    appData['counter'] = 0
-  }
-
-  // Update a few values
-  appData['counter']++
-  appData['date'] = Date.now()
-
-  // persist all local data remotely
-  masqStore.setAll(appData).then(function () {
-    console.log('Wrote updated value for key "counter":', appData['counter'])
-
-    // retrieve the remote state for one particular key (e.g. counter)
-    masqStore.get('counter').then(function (res) {
-      console.log('Got remote value for key "counter":', res)
-
-      if (appData['counter'] === 2) {
-        // delete the counter data remotely
-        masqStore.del('counter').then(getRemoteData).then(function (res) {
-          console.log('Loaded remote app state:', res)
-          // clear remote store
-          masqStore.clear().then(getRemoteData).then(function (res) {
-            console.log('Loaded remote app state:', res)
-          })
-        })
-      }
-    })
-  })
-}).catch(function (err) {
-  if (err.message === 'UNREGISTERED') {
-    // Parameters used for app registration
-    var regParams = {
-      endpoint: STORE,
-      url: appURL,
-      title: 'ACME app',
-      desc: 'A generic app that uses Masq for storage',
-      icon: 'http://127.0.0.1:8081/img/logo.png'
-    }
-    // add listener
-    regButton.addEventListener('click', function () {
-      masqStore.registerApp(regParams).then(function () {
-        // init Masq store again as well as the app
-        masqStore = new MasqClient(hubURL)
-        // or just reload the window
-        // window.location.reload()
-      })
-    })
-  }
-})
+var masqStore = new MasqClient(storeURL)
 ```
+
+**NOTE:** You can find a fully working example in the `/example` dir.
 
 # API
 
@@ -196,6 +132,36 @@ masqStore.clear().then(function() {
   })
 }).catch(function (err) {
   console.log(err)
+})
+```
+
+## Register an App
+
+```JavaScript
+var regParams = {
+  endpoint: STORE,
+  url: 'http://example.org',
+  title: 'Example app',
+  desc: 'A generic app that uses Masq for storage',
+  icon: 'http://example.org/logo.png'
+}
+
+document.getElementById('registerButton').addEventListener('click', function () {
+  masqStore.registerApp(regParams).then(function (e) {
+    // get the data from the store using masqStore.getAll() 
+  })
+})
+```
+
+## Listen for changes to the store (e.g. sync events)
+
+```JavaScript
+document.addEventListener('Sync', function (event) {
+  if (masqStore) {
+    masqStore.getAll().then(function (res) {
+      // update your local app state with data from 'res'
+    })
+  }
 })
 ```
 
