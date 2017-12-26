@@ -4,20 +4,24 @@
 <title>Masq Storage Client</title>
 </head>
 <body>
-  <h1>ACME Masq App</h1>
+  <h1>Test Masq App</h1>
   <p>
-    <pre id="data"></pre>
+    <button id="decr">-</button>
+    <span id="cntr">0</span>
+    <button id="incr">+</button>
   </p>
 </body>
 <script type="text/javascript" src="../dist/masq.js"></script>
 <script>
-var pre = document.getElementById('data')
+var decr = document.getElementById('decr')
+var incr = document.getElementById('incr')
+var cntr = document.getElementById('cntr')
 var STORE = 'https://sync-beta.qwantresearch.com'
 var appURL = window.location.origin + window.location.pathname
 var regParams = {
   endpoint: STORE,
   url: appURL,
-  title: 'ACME app',
+  title: 'Test app',
   desc: 'A generic app that uses Masq for storage',
   icon: 'https://camo.githubusercontent.com/8b35d12bd9682a31446b08c1483145653aa5006f/68747470733a2f2f692e696d6775722e636f6d2f715a33647130512e706e67'
 }
@@ -25,7 +29,9 @@ var regParams = {
 var masqStore = new window.MasqClient(STORE)
 
 // Your app data (store)
-var appData = {}
+var appData = {
+  counter: 0
+}
 
 // Register app if it's the first time we use it
 var register = function () {
@@ -50,9 +56,9 @@ var getRemoteData = function () {
       errMsg.remove()
     }
     // update your local store
-    appData = res || appData
+    appData.counter = res.counter || 0
     console.log('Loaded app state:', appData)
-    pre.innerText = JSON.stringify(appData)
+    cntr.innerText = appData.counter
   }).catch(function (err) {
     if (err.message === 'UNREGISTERED') {
       register()
@@ -65,18 +71,28 @@ var getRemoteData = function () {
 document.addEventListener('Sync', function (event) {
   console.log('Sync event!')
   if (masqStore) {
-    masqStore.getAll().then(function (res) {
-        // update your local store
-      appData = res || appData
-      pre.innerText = JSON.stringify(appData)
-    })
+    getRemoteData()
+  }
+})
+
+decr.addEventListener('click', function (event) {
+  if (masqStore) {
+    appData.counter--
+    setAll(appData)
+  }
+})
+
+incr.addEventListener('click', function (event) {
+  if (masqStore) {
+    appData.counter++
+    setAll(appData)
   }
 })
 
 // Public wrapper around the MasqStore.setAll method
 var setAll = function (obj) {
   masqStore.setAll(obj).then(function () {
-    pre.innerText = JSON.stringify(obj)
+    cntr.innerText = obj.counter
   }).catch(function (err) {
     console.log(err)
   })
