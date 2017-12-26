@@ -157,7 +157,7 @@
 
     return new this._promise(function (resolve, reject) {
       var timeout = setTimeout(function () {
-        reject(new Error('MasqClient could not connect'))
+        reject(new Error('MasqClient could not connect to ' + client._endpoint))
       }, client._timeout)
 
       client._requests.connect.push(function (err) {

@@ -41,7 +41,7 @@
    * @property {Window}   _regwindow The app registration window
    */
   function MasqClient (url, opts) {
-    this._endpoint = 'https://qwantresearch.gitstore.io/masq-store/'
+    this._endpoint = 'https://sync-beta.qwantresearch.com/'
 
     url = url || this._endpoint
     opts = opts || {}
@@ -158,7 +158,7 @@
 
     return new this._promise(function (resolve, reject) {
       var timeout = setTimeout(function () {
-        reject(new Error('MasqClient could not connect'))
+        reject(new Error('MasqClient could not connect to ' + client._endpoint))
       }, client._timeout)
 
       client._requests.connect.push(function (err) {
@@ -220,15 +220,6 @@
         }, false)
       }
     })
-  }
-
-  /**
-   * Force sync for the app.
-   *
-   * @returns {Promise} A promise that is settled on store response or timeout
-   */
-  MasqClient.prototype.sync = function () {
-    return this._request('sync')
   }
 
   /**
