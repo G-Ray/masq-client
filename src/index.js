@@ -26,29 +26,28 @@
    * @param {object} [opts] An optional object containing additional options,
    *                        including timeout, frameId, and promise
    *
-   * @property {string}   _endpoint  Default endpoint URL for the store
-   * @property {string}   _id        A UUID v4 id
-   * @property {function} _promise   The Promise object to use
-   * @property {string}   _frameId   The id of the iFrame pointing to the store url
-   * @property {string}   _origin    The store's origin
-   * @property {object}   _requests  Mapping of request ids to callbacks
-   * @property {bool}     _connected Whether or not it has connected
-   * @property {bool}     _closed    Whether or not the client has closed
-   * @property {int}      _count     Number of requests sent
-   * @property {function} _listener  The listener added to the window
-   * @property {Window}   _store     The store window
-   * @property {Window}   _regwindow The app registration window
+   * @property {string}   _id            A UUID v4 id
+   * @property {function} _promise       The Promise object to use
+   * @property {string}   _frameId       The id of the iFrame pointing to the store url
+   * @property {string}   _origin        The store's origin
+   * @property {object}   _requests      Mapping of request ids to callbacks
+   * @property {bool}     _connected     Whether or not it has connected
+   * @property {bool}     _closed        Whether or not the client has closed
+   * @property {int}      _count         Number of requests sent
+   * @property {function} _listener      The listener added to the window
+   * @property {Window}   _store         The store window
+   * @property {string}   _storeURL      Default endpoint URL for the store
+   * @property {Window}   _regwindow     The app registration window
    */
   function MasqClient (url, opts) {
-    this._endpoint = 'https://sync-beta.qwantresearch.com/'
+    this._storeURL = url || 'https://sync-beta.qwantresearch.com/'
 
-    url = url || this._endpoint
     opts = opts || {}
 
     this._id = MasqClient._generateUUID()
     this._promise = opts.promise || Promise
     this._frameId = opts.frameId || 'MasqClient-' + this._id
-    this._origin = MasqClient._getOrigin(url)
+    this._origin = MasqClient._getOrigin(this._storeURL)
     this._requests = {}
     this._connected = false
     this._closed = false
@@ -70,7 +69,7 @@
     }
 
     // Create the frame if not found or specified
-    frame = frame || this._createFrame(url)
+    frame = frame || this._createFrame(this._storeURL)
     this._store = frame.contentWindow
   }
 
@@ -157,7 +156,7 @@
 
     return new this._promise(function (resolve, reject) {
       var timeout = setTimeout(function () {
-        reject(new Error('MasqClient could not connect to ' + client._endpoint))
+        reject(new Error('MasqClient could not connect to ' + client._storeURL))
       }, client._timeout)
 
       client._requests.connect.push(function (err) {
