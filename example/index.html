@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <title>Masq Storage Client</title>
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
 </head>
 <body>
   <h1>Test Masq App</h1>
-  <p>
+  <p id="counter" class="hidden">
     <button id="decr">-</button>
     <span id="cntr">0</span>
     <button id="incr">+</button>
@@ -59,6 +64,7 @@ var getRemoteData = function () {
     appData.counter = res.counter || 0
     console.log('Loaded app state:', appData)
     cntr.innerText = appData.counter
+    document.getElementById('counter').classList.remove('hidden')
   }).catch(function (err) {
     if (err.message === 'UNREGISTERED') {
       register()
