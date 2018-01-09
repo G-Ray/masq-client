@@ -3,6 +3,9 @@
 <head>
 <title>Masq Storage Client</title>
 <style>
+  html {
+    zoom: 2;
+  }
   .hidden {
     display: none;
   }
@@ -21,7 +24,7 @@
 var decr = document.getElementById('decr')
 var incr = document.getElementById('incr')
 var cntr = document.getElementById('cntr')
-var STORE = 'https://sync-beta.qwantresearch.com/'
+var STORE = 'http://127.0.0.1:8080/'
 var appURL = window.location.origin + window.location.pathname
 var regParams = {
   endpoint: STORE,
@@ -84,21 +87,21 @@ document.addEventListener('Sync', function (event) {
 decr.addEventListener('click', function (event) {
   if (masqStore) {
     appData.counter--
-    setAll(appData)
+    set('counter', appData.counter)
   }
 })
 
 incr.addEventListener('click', function (event) {
   if (masqStore) {
     appData.counter++
-    setAll(appData)
+    set('counter', appData.counter)
   }
 })
 
-// Public wrapper around the MasqStore.setAll method
-var setAll = function (obj) {
-  masqStore.setAll(obj).then(function () {
-    cntr.innerText = obj.counter
+// Public wrapper around the MasqStore.set method
+var set = function (key, val) {
+  masqStore.set(key, val).then(function () {
+    cntr.innerText = val
   }).catch(function (err) {
     console.log(err)
   })
