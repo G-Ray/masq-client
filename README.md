@@ -137,9 +137,17 @@ masqStore.clear().then(function() {
 
 ## Register an App
 
+List of parameters:
+
+  * `endpoint`: URL of the store app (UI)
+  * `url`: URL of the app to be registered
+  * `title`: title of the app
+  * `desc`: description of the app
+  * `icon`: URL of an icon for the app
+  
 ```JavaScript
 var regParams = {
-  endpoint: STORE,
+  endpoint: 'https://sync-beta.qwantresearch.com',
   url: 'http://example.org',
   title: 'Example app',
   desc: 'A generic app that uses Masq for storage',
