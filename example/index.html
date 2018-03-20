@@ -24,6 +24,7 @@
 var decr = document.getElementById('decr')
 var incr = document.getElementById('incr')
 var cntr = document.getElementById('cntr')
+// var STORE = 'https://sync-beta.qwantresearch.com/'
 var STORE = 'http://127.0.0.1:8080/'
 var appURL = window.location.origin + window.location.pathname
 var regParams = {
@@ -72,7 +73,7 @@ var getRemoteData = function () {
     if (err.message === 'UNREGISTERED') {
       register()
     }
-    console.log(err.message)
+    console.log(err)
   })
 }
 
@@ -108,6 +109,8 @@ var set = function (key, val) {
 }
 
 // Initialize the store
-masqStore.onConnect().then(getRemoteData)
+masqStore.onConnect().then(getRemoteData).catch(function (err) {
+  console.log(err)
+})
 </script>
 </html>

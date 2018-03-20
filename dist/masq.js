@@ -41,7 +41,7 @@
    * @property {Window}   _regwindow     The app registration window
    */
   function MasqClient (url, opts) {
-    this._storeURL = url || 'https://sync-beta.qwantresearch.com/'
+    this._storeURL = url || window.location.origin
 
     opts = opts || {}
 
@@ -59,33 +59,8 @@
 
     this._installListener()
 
-    var frame
-    if (opts.frameId) {
-      frame = document.getElementById(opts.frameId)
-    }
-
-    // If using a passed iframe, poll the store for a ready message
-    if (frame) {
-      this._poll()
-    }
-
-    // Create the frame if not found or specified
-    frame = frame || this._createFrame(this._storeURL)
-    this._store = frame.contentWindow
-  }
-
-  /**
-   * The styles to be applied to the generated iFrame. Defines a set of properties
-   * that hide the element by positioning it outside of the visible area, and
-   * by modifying its display.
-   *
-   * @member {Object}
-   */
-  MasqClient.frameStyle = {
-    display: 'none',
-    position: 'absolute',
-    top: '-999px',
-    left: '-999px'
+    // Set the store object (typically the window)
+    this._store = opts.store || window
   }
 
   /**
@@ -320,11 +295,6 @@
    * no longer be used after being invoked.
    */
   MasqClient.prototype.close = function () {
-    var frame = document.getElementById(this._frameId)
-    if (frame) {
-      frame.parentNode.removeChild(frame)
-    }
-
     // Support IE8 with detachEvent
     if (window.removeEventListener) {
       window.removeEventListener('message', this._listener, false)
@@ -447,50 +417,21 @@
    * the client to create its own iframe. Polls the store for a ready event to
    * establish a connected state.
    */
-  MasqClient.prototype._poll = function () {
-    var client, interval, targetOrigin
+  // MasqClient.prototype._poll = function () {
+  //   var client, interval, targetOrigin
 
-    client = this
+  //   client = this
 
-    // postMessage requires that the target origin be set to "*" for "file://"
-    targetOrigin = (client._origin === 'file://') ? '*' : client._origin
+  //   // postMessage requires that the target origin be set to "*" for "file://"
+  //   targetOrigin = (client._origin === 'file://') ? '*' : client._origin
 
-    interval = setInterval(function () {
-      if (client._connected) return clearInterval(interval)
-      if (!client._store) return
+  //   interval = setInterval(function () {
+  //     if (client._connected) return clearInterval(interval)
+  //     if (!client._store) return
 
-      client._store.postMessage({'cross-storage': 'poll'}, targetOrigin)
-    }, 100)
-  }
-
-  /**
-   * Creates a new iFrame containing the store. Applies the necessary styles to
-   * hide the element from view, prior to adding it to the document body.
-   * Returns the created element.
-   *
-   * @private
-   *
-   * @param  {string}            url The url to the store
-   * returns {HTMLIFrameElement} The iFrame element itself
-   */
-  MasqClient.prototype._createFrame = function (url) {
-    var frame, key
-
-    frame = window.document.createElement('iframe')
-    frame.id = this._frameId
-
-    // Style the iframe
-    for (key in MasqClient.frameStyle) {
-      if (MasqClient.frameStyle.hasOwnProperty(key)) {
-        frame.style[key] = MasqClient.frameStyle[key]
-      }
-    }
-
-    window.document.body.appendChild(frame)
-    frame.src = url
-
-    return frame
-  }
+  //     client._store.postMessage({'cross-storage': 'poll'}, targetOrigin)
+  //   }, 100)
+  // }
 
   /**
    * Sends a message containing the given method and params to the store. Stores
