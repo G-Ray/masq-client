@@ -500,5 +500,22 @@ class MasqClient {
   }
 }
 
-export default MasqClient
+// export default MasqClient
 // export { MasqClient }
+
+// module.exports = MasqClient
+
+/**
+   * Export for various environments.
+   */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = MasqClient
+} else if (typeof exports !== 'undefined') {
+  exports.MasqClient = MasqClient
+} else if (typeof define === 'function' && define.amd) {
+  define([], function () {
+    return MasqClient
+  })
+} else {
+  root.MasqClient = MasqClient
+}
