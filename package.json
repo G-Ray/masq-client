@@ -4,8 +4,12 @@
   "description": "Client library for Masq",
   "main": "index.js",
   "scripts": {
-    "start": "http-server -p 9999 .",
-    "build": "./node_modules/.bin/browserify src/index.js --standalone MasqClient > dist/masq.js && ./node_modules/.bin/uglifyjs dist/masq.js -o dist/masq.min.js --compress --mangle -- "
+    "clean": "rm  dist/index.js ",
+    "build": "babel ./src --experimental -d ./dist && browserify ./dist/index.js --standalone MasqClient > dist/MasqClient.js && npm run clean",
+    "minify": "npm run build && uglifyjs dist/MasqClient.js -o dist/MasqClient.min.js --compress --mangle --",
+    "dist": "npm run minify",
+    "start": "npm run dist && http-server -p 9999 ."
+
   },
   "author": {
     "name": "Andrei Sambra",
@@ -13,6 +17,8 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "browserify": "^14.5.0",
     "http-server": "^0.10.0",
     "uglify-js": "^3.1.10"
