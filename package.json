@@ -8,6 +8,7 @@
     "build": "babel ./src --experimental -d ./dist && browserify ./dist/index.js --standalone MasqClient > dist/MasqClient.js && npm run clean",
     "minify": "npm run build && uglifyjs dist/MasqClient.js -o dist/MasqClient.min.js --compress --mangle --",
     "dist": "npm run minify",
+    "lint": "standard",
     "start": "npm run dist && http-server -p 9999 ."
 
   },
@@ -29,5 +30,24 @@
   },
   "dependencies": {
     "cross-storage": "^1.0.0"
+  },
+  "standard": {
+    "ignore": [
+        "node_modules/**"
+    ],
+    "globals": [
+        "describe",
+        "context",
+        "before",
+        "beforeEach",
+        "after",
+        "afterEach",
+        "it",
+        "expect",
+        "should",
+        "afterAll",
+        "beforeAll",
+        "define"
+    ]
   }
 }
