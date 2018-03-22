@@ -2,32 +2,28 @@
    * Forked from https://gitstore.com/zendesk/cross-storage
    *
    * Constructs a new cross storage client given the url to a store. By default,
-   * an iframe is created within the document body that points to the url. It
-   * also accepts an options object, which may include a timeout, frameId, and
-   * promise. The timeout, in milliseconds, is applied to each request and
-   * defaults to 5000ms. The options object may also include a frameId,
-   * identifying an existing frame on which to install its listeners. If the
-   * promise key is supplied the constructor for a Promise, that Promise library
-   * will be used instead of the default window.Promise.
+   * it uses a content script injected by the Masq extension. It also accepts an
+   * options object, which may include a timeout, and promise. The timeout, in
+   * milliseconds, is applied to each request and defaults to 5000ms.
+   * If the promise key is supplied the constructor for a Promise, that Promise
+   * library will be used instead of the default window.Promise.
    *
    * @example
    * var storage = new MasqClient('https://store.example.com/store.html');
    *
    * @example
    * var storage = new MasqClient('https://store.example.com/store.html', {
-   *   timeout: 5000,
-   *   frameId: 'storageFrame'
+   *   timeout: 5000
    * });
    *
    * @constructor
    *
    * @param {string} url    The url to a cross storage store
    * @param {object} [opts] An optional object containing additional options,
-   *                        including timeout, frameId, and promise
+   *                        including timeout, and promise
    *
    * @property {string}   _id            A UUID v4 id
    * @property {function} _promise       The Promise object to use
-   * @property {string}   _frameId       The id of the iFrame pointing to the store url
    * @property {string}   _origin        The store's origin
    * @property {object}   _requests      Mapping of request ids to callbacks
    * @property {bool}     _connected     Whether or not it has connected
@@ -46,7 +42,6 @@ class MasqClient {
 
     this._id = this._generateUUID()
     this._promise = opts.promise || Promise
-    this._frameId = opts.frameId || 'MasqClient-' + this._id
     this._origin = this._getOrigin(this._storeURL)
     this._requests = {}
     this._connected = false
@@ -127,12 +122,12 @@ class MasqClient {
       this._requests.connect = []
     }
 
-    return new this._promise(function (resolve, reject) {
+    return new this._promise((resolve, reject) => {
       var timeout = setTimeout(function () {
         reject(new Error('MasqClient could not connect to ' + client._storeURL))
       }, client._timeout)
 
-      client._requests.connect.push(function (err) {
+      client._requests.connect.push((err) => {
         clearTimeout(timeout)
         if (err) return reject(err)
 
@@ -148,11 +143,12 @@ class MasqClient {
      * @returns {Promise} A promise that is settled on app registration status
      */
   registerApp (params) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (this._regwindow === undefined || this._regwindow.closed) {
         var w = 400
         var h = 600
 
+        // TODO: replace endpoint with extension (how to trigger extension?)
         params.endpoint = params.endpoint || this._endpoint
         if (!params.url) {
           reject(new Error('No app URL provided to registerApp()'))
@@ -184,7 +180,7 @@ class MasqClient {
         }
 
         // wrap onunload in a load event to avoid it being triggered too early
-        window.addEventListener('message', function (e) {
+        window.addEventListener('message', (e) => {
           if (e.data === 'REGISTRATIONFINISHED') {
             resolve(e)
           }
@@ -316,7 +312,7 @@ class MasqClient {
   _installListener () {
     var client = this
 
-    this._listener = function (message) {
+    this._listener = (message) => {
       var i, origin, error, response
 
       // Ignore invalid messages or those after the client has closed
@@ -372,7 +368,7 @@ class MasqClient {
       console.log(response)
       // Tell the app the we updated the data following a sync event
       if (message.data['sync']) {
-        var syncEvt = new CustomEvent('Sync')
+        var syncEvt = new window.CustomEvent('Sync')
         document.dispatchEvent(syncEvt)
       }
 
@@ -402,34 +398,13 @@ class MasqClient {
     // postMessage requires that the target origin be set to "*" for "file://"
     targetOrigin = (client._origin === 'file://') ? '*' : client._origin
 
-    interval = setInterval(function () {
+    interval = setInterval(() => {
       if (client._connected) return clearInterval(interval)
       if (!client._store) return
 
       client._store.postMessage({'cross-storage': 'init'}, targetOrigin)
     }, 100)
   }
-
-  /**
-     * Invoked when a frame id was passed to the client, rather than allowing
-     * the client to create its own iframe. Polls the store for a ready event to
-     * establish a connected state.
-     */
-  // _poll = function () {
-  //   var client, interval, targetOrigin
-
-  //   client = this
-
-  //   // postMessage requires that the target origin be set to "*" for "file://"
-  //   targetOrigin = (client._origin === 'file://') ? '*' : client._origin
-
-  //   interval = setInterval(function () {
-  //     if (client._connected) return clearInterval(interval)
-  //     if (!client._store) return
-
-  //     client._store.postMessage({'cross-storage': 'poll'}, targetOrigin)
-  //   }, 100)
-  // }
 
   /**
      * Sends a message containing the given method and params to the store. Stores
@@ -458,11 +433,11 @@ class MasqClient {
       params: params
     }
 
-    return new this._promise(function (resolve, reject) {
+    return new this._promise((resolve, reject) => {
       var timeout, originalToJSON, targetOrigin
 
       // Timeout if a response isn't received after 4s
-      timeout = setTimeout(function () {
+      timeout = setTimeout(() => {
         if (!client._requests[req.client]) return
 
         delete client._requests[req.client]
@@ -470,7 +445,7 @@ class MasqClient {
       }, client._timeout)
 
       // Add request callback
-      client._requests[req.client] = function (err, result) {
+      client._requests[req.client] = (err, result) => {
         clearTimeout(timeout)
         delete client._requests[req.client]
         if (err) return reject(new Error(err))
@@ -479,9 +454,9 @@ class MasqClient {
 
       // In case we have a broken Array.prototype.toJSON, e.g. because of
       // old versions of prototype
-      if (Array.prototype.toJSON) {
+      if (window.Array.prototype.toJSON) {
         originalToJSON = Array.prototype.toJSON
-        Array.prototype.toJSON = null
+        window.Array.prototype.toJSON = null
       }
 
       // postMessage requires that the target origin be set to "*" for "file://"
@@ -492,7 +467,7 @@ class MasqClient {
 
       // Restore original toJSON
       if (originalToJSON) {
-        Array.prototype.toJSON = originalToJSON
+        window.Array.prototype.toJSON = originalToJSON
       }
     })
   }
@@ -511,9 +486,7 @@ if (typeof module !== 'undefined' && module.exports) {
 } else if (typeof exports !== 'undefined') {
   exports.MasqClient = MasqClient
 } else if (typeof define === 'function' && define.amd) {
-  define([], function () {
-    return MasqClient
-  })
+  define([], () => MasqClient)
 } else {
   root.MasqClient = MasqClient
 }

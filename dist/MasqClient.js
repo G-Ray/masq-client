@@ -1,10 +1,6 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MasqClient = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -13,32 +9,28 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
    * Forked from https://gitstore.com/zendesk/cross-storage
    *
    * Constructs a new cross storage client given the url to a store. By default,
-   * an iframe is created within the document body that points to the url. It
-   * also accepts an options object, which may include a timeout, frameId, and
-   * promise. The timeout, in milliseconds, is applied to each request and
-   * defaults to 5000ms. The options object may also include a frameId,
-   * identifying an existing frame on which to install its listeners. If the
-   * promise key is supplied the constructor for a Promise, that Promise library
-   * will be used instead of the default window.Promise.
+   * it uses a content script injected by the Masq extension. It also accepts an
+   * options object, which may include a timeout, and promise. The timeout, in
+   * milliseconds, is applied to each request and defaults to 5000ms.
+   * If the promise key is supplied the constructor for a Promise, that Promise
+   * library will be used instead of the default window.Promise.
    *
    * @example
    * var storage = new MasqClient('https://store.example.com/store.html');
    *
    * @example
    * var storage = new MasqClient('https://store.example.com/store.html', {
-   *   timeout: 5000,
-   *   frameId: 'storageFrame'
+   *   timeout: 5000
    * });
    *
    * @constructor
    *
    * @param {string} url    The url to a cross storage store
    * @param {object} [opts] An optional object containing additional options,
-   *                        including timeout, frameId, and promise
+   *                        including timeout, and promise
    *
    * @property {string}   _id            A UUID v4 id
    * @property {function} _promise       The Promise object to use
-   * @property {string}   _frameId       The id of the iFrame pointing to the store url
    * @property {string}   _origin        The store's origin
    * @property {object}   _requests      Mapping of request ids to callbacks
    * @property {bool}     _connected     Whether or not it has connected
@@ -59,7 +51,6 @@ var MasqClient = function () {
 
     this._id = this._generateUUID();
     this._promise = opts.promise || Promise;
-    this._frameId = opts.frameId || 'MasqClient-' + this._id;
     this._origin = this._getOrigin(this._storeURL);
     this._requests = {};
     this._connected = false;
@@ -121,11 +112,8 @@ var MasqClient = function () {
   }, {
     key: '_generateUUID',
     value: function _generateUUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : r & 0x3 | 0x8;
-
-        return v.toString(16);
+      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
+        return (c ^ window.crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
       });
     }
 
@@ -177,12 +165,15 @@ var MasqClient = function () {
   }, {
     key: 'registerApp',
     value: function registerApp(params) {
+      var _this = this;
+
       return new Promise(function (resolve, reject) {
-        if (this._regwindow === undefined || this._regwindow.closed) {
+        if (_this._regwindow === undefined || _this._regwindow.closed) {
           var w = 400;
           var h = 600;
 
-          params.endpoint = params.endpoint || this._endpoint;
+          // TODO: replace endpoint with extension (how to trigger extension?)
+          params.endpoint = params.endpoint || _this._endpoint;
           if (!params.url) {
             reject(new Error('No app URL provided to registerApp()'));
           }
@@ -205,11 +196,11 @@ var MasqClient = function () {
 
           var left = width / 2 - w / 2 + dualScreenLeft;
           var top = height / 2 - h / 2 + dualScreenTop;
-          this._regwindow = window.open(url, '', 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+          _this._regwindow = window.open(url, '', 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
 
           // Puts focus on the newWindow
           if (window.focus) {
-            this._regwindow.focus();
+            _this._regwindow.focus();
           }
 
           // wrap onunload in a load event to avoid it being triggered too early
@@ -428,7 +419,7 @@ var MasqClient = function () {
         console.log(response);
         // Tell the app the we updated the data following a sync event
         if (message.data['sync']) {
-          var syncEvt = new CustomEvent('Sync');
+          var syncEvt = new window.CustomEvent('Sync');
           document.dispatchEvent(syncEvt);
         }
 
@@ -468,27 +459,6 @@ var MasqClient = function () {
         client._store.postMessage({ 'cross-storage': 'init' }, targetOrigin);
       }, 100);
     }
-
-    /**
-       * Invoked when a frame id was passed to the client, rather than allowing
-       * the client to create its own iframe. Polls the store for a ready event to
-       * establish a connected state.
-       */
-    // _poll = function () {
-    //   var client, interval, targetOrigin
-
-    //   client = this
-
-    //   // postMessage requires that the target origin be set to "*" for "file://"
-    //   targetOrigin = (client._origin === 'file://') ? '*' : client._origin
-
-    //   interval = setInterval(function () {
-    //     if (client._connected) return clearInterval(interval)
-    //     if (!client._store) return
-
-    //     client._store.postMessage({'cross-storage': 'poll'}, targetOrigin)
-    //   }, 100)
-    // }
 
     /**
        * Sends a message containing the given method and params to the store. Stores
@@ -541,9 +511,9 @@ var MasqClient = function () {
 
         // In case we have a broken Array.prototype.toJSON, e.g. because of
         // old versions of prototype
-        if (Array.prototype.toJSON) {
+        if (window.Array.prototype.toJSON) {
           originalToJSON = Array.prototype.toJSON;
-          Array.prototype.toJSON = null;
+          window.Array.prototype.toJSON = null;
         }
 
         // postMessage requires that the target origin be set to "*" for "file://"
@@ -554,7 +524,7 @@ var MasqClient = function () {
 
         // Restore original toJSON
         if (originalToJSON) {
-          Array.prototype.toJSON = originalToJSON;
+          window.Array.prototype.toJSON = originalToJSON;
         }
       });
     }
@@ -563,7 +533,26 @@ var MasqClient = function () {
   return MasqClient;
 }();
 
-exports.default = MasqClient;
+// export default MasqClient
 // export { MasqClient }
+
+// module.exports = MasqClient
+
+/**
+   * Export for various environments.
+   */
+
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = MasqClient;
+} else if (typeof exports !== 'undefined') {
+  exports.MasqClient = MasqClient;
+} else if (typeof define === 'function' && define.amd) {
+  define([], function () {
+    return MasqClient;
+  });
+} else {
+  root.MasqClient = MasqClient;
+}
 },{}]},{},[1])(1)
 });
