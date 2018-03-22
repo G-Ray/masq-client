@@ -10,7 +10,6 @@
     "dist": "npm run minify",
     "lint": "standard src/",
     "start": "npm run dist && http-server -p 9999 ."
-
   },
   "author": {
     "name": "Andrei Sambra",
@@ -22,6 +21,7 @@
     "babel-preset-env": "^1.6.1",
     "browserify": "^14.5.0",
     "http-server": "^0.10.0",
+    "standard": "^11.0.1",
     "uglify-js": "^3.1.10"
   },
   "repository": {
@@ -33,21 +33,21 @@
   },
   "standard": {
     "ignore": [
-        "node_modules/**"
+      "node_modules/**"
     ],
     "globals": [
-        "describe",
-        "context",
-        "before",
-        "beforeEach",
-        "after",
-        "afterEach",
-        "it",
-        "expect",
-        "should",
-        "afterAll",
-        "beforeAll",
-        "define"
+      "describe",
+      "context",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach",
+      "it",
+      "expect",
+      "should",
+      "afterAll",
+      "beforeAll",
+      "define"
     ]
   }
 }
