@@ -18,7 +18,7 @@
     "isomorphic-ws": "^4.0.0",
     "ws": "^5.1.1",
     "masq-common": "git+https://github.com/QwantResearch/masq-common.git",
-    "masq-socket": "git+https://github.com/QwantResearch/masq-socket.git#broken"
+    "masq-socket": "git+https://github.com/QwantResearch/masq-socket.git"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
