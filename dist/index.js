@@ -1,10 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Client = undefined;
-
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -31,7 +26,7 @@ var _masqCommon2 = _interopRequireDefault(_masqCommon);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Client = exports.Client = function () {
+var Client = function () {
   function Client() {
     var conf = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     (0, _classCallCheck3.default)(this, Client);
@@ -307,3 +302,5 @@ var Client = exports.Client = function () {
   }]);
   return Client;
 }();
+
+module.exports.Client = Client;

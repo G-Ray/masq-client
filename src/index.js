@@ -1,7 +1,7 @@
 import socket from 'masq-socket'
 import common from 'masq-common'
 
-export class Client {
+class Client {
   constructor (conf = {}) {
     this.conf = conf
     this.ws = undefined
@@ -142,3 +142,5 @@ export class Client {
     })
   }
 }
+
+module.exports.Client = Client
