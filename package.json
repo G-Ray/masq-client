@@ -1,27 +1,51 @@
 {
   "name": "masq-client",
-  "version": "1.1.0",
-  "description": "Client library for Masq",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Masq client",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "http-server -p 9999 .",
-    "build": "./node_modules/.bin/browserify src/index.js --standalone MasqClient > dist/masq.js && ./node_modules/.bin/uglifyjs dist/masq.js -o dist/masq.min.js --compress --mangle -- "
-  },
-  "author": {
-    "name": "Andrei Sambra",
-    "email": "a.sambra@qwant.com"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "browserify": "^14.5.0",
-    "http-server": "^0.10.0",
-    "uglify-js": "^3.1.10"
+    "build": "babel src --presets env --out-dir dist/",
+    "test": "jest --no-cache --verbose --runInBand --forceExit --coverage ./test/*.test.js",
+    "watch": "jest --watch ./test/*.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/QwantResearch/masq-client.git"
+    "url": "git+https://github.com/QwantResearch/masq-client.git"
   },
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "cross-storage": "^1.0.0"
+    "isomorphic-ws": "^4.0.0",
+    "ws": "^5.1.1",
+    "masq-common": "git+https://github.com/QwantResearch/masq-common.git",
+    "masq-socket": "git+https://github.com/QwantResearch/masq-socket.git#broken"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-runtime": "^6.26.0",
+    "browserify": "^16.1.1",
+    "jest": "^22.3.0",
+    "standard": "^11.0.1",
+    "localforage": "^1.7.1",
+    "masq-store": "git+https://github.com/QwantResearch/masq-store.git"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "context",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach",
+      "it",
+      "expect",
+      "should",
+      "afterAll",
+      "beforeAll",
+      "jest",
+      "define"
+    ]
   }
 }
