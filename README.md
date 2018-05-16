@@ -1,6 +1,7 @@
 # Masq Client
 
-[![](https://img.shields.io/badge/project-Masq-7C4DFF.svg?style=flat-square)](https://github.com/QwantResearch/masq-store)
+[![](https://img.shields.io/badge/project-Masq-7C4DFF.svg?style=flat-square)](https://github.com/QwantResearch/masq-client)
+[![](https://api.travis-ci.org/QwantResearch/masq-client.svg)](https://travis-ci.org/QwantResearch/masq-client)
 
 ![Masq Logo](https://i.imgur.com/qZ3dq0Q.png)
 
