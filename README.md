@@ -15,165 +15,134 @@ Promise-based client library for Qwant Masq. It allows applications to connect t
 git clone https://github.com/QwantResearch/masq-client.git
 cd client
 npm install
-npm start
 ```
 
 # Example usage
+Install the package using npm:
 
-Add the client JS reference in your page:
-
-```HTML
-<script type="text/javascript" src="dist/masq.js"></script>
+```bash
+npm install --save git+https://github.com/QwantResearch/masq-client.git
 ```
 
-Or the minified version:
-
-```HTML
-<script type="text/javascript" src="dist/masq.min.js"></script>
-```
-
-You can also use the online version hosted on Github pages:
-
-```HTML
-<script type="text/javascript" src="https://qwantresearch.github.io/masq-client/dist/masq.min.js"></script>
-```
 
 Using the client library in your app:
 
 ```JavaScript
-// Define the hub URL (where the data will be persisted)
-var storeURL = 'https://sync-beta.qwantresearch.com/'
+import MasqClient from 'masq-client'
+
+// Define the Masq App socket URL (where the data will be persisted)
+var settings = {
+  socketUrl: 'ws://localhost:8080'
+}
 
 // Initialize the store
-var masqStore = new MasqClient(storeURL)
+var masqStore = new MasqClient.Client(settings)
 ```
 
-**NOTE:** You can find a fully working example in the `/example` dir.
+**NOTE:** You can find a fully working example in the [https://github.com/QwantResearch/masq-demos](search demo app).
 
 # API
 
-## Initializing the client
+## Initialize the client
 
 ```JavaScript
-var masqStore = new MasqClient()
-```
+var settings = {}
+// first check if we have previously stored an authz token (more info below in the app registration)
+var token = window.localStorage.getItem('token')
+if (token) {
+  settings['authToken'] = token
+}
 
-## Storing a local data object remotely
+var client = new Client(settings)
 
-```JavaScript
-var appData = {}
-appData.date = Date.now() // 1510847132596
-appData.text = 'Hello'
+// create a callback function that is called when an update is received from the server (typically following a sync event)
+var pushCallback = function(msg) {
+  // update your local app data
+}
 
-masqStore.setAll(appData).then(function () {
-  // success
-}).catch(function (err) {
-  console.log(err)
-})
-```
-
-## Getting all the remote data
-
-```JavaScript
-masqStore.onConnect().then(function () {
-  masqStore.getAll().then(function (data) {
-    console.log(data) // prints { date: 1510847132596, text: "Hello" }
-  }).catch(function (err) {
-    console.log(err)
-  })
-}).catch(function (err) {
-  console.log(err)
-})
-```
-
-## Update (set) a specific key/value pair
-
-```JavaScript
-masqStore.set('text', 'Hello world').then(function () {
-  // success
-}).catch(function (err) {
-  console.log(err)
-})
-```
-
-## Get the value for a specific key
-
-```JavaScript
-masqStore.get('text').then(function (res) {
-  console.log(res) // prints "Hello world"
-}).catch(function (err) {
-  console.log(err)
-})
-```
-
-## Delete a specific key
-
-```JavaScript
-masqStore.del('date').then(function () {
-  // success, we have deleted the key "date"
-  // let's fetch all the remote data to take a look at what's left
-  masqStore.getAll().then(function (data) {
-    console.log(data) // prints { text: "Hello world" }
-  }).catch(function (err) {
-    console.log(err)
-  })
-}).catch(function (err) {
-  console.log(err)
-})
-```
-
-## Delete (clear) all the remote data
-
-```JavaScript
-masqStore.clear().then(function() {
-  masqStore.getAll().then(function (data) {
-    console.log(data) // prints {}
-  }).catch(function (err) {
-    console.log(err)
-  })
-}).catch(function (err) {
-  console.log(err)
+// finally init the WebSocket client that connects to the store
+client.initWS(pushCallback).then(function () {
+  // you can start using the client
 })
 ```
 
 ## Register an App
 
+Before being able to use Masq to store application data, an application has to register itself with the Masq App in order to receive an *authorization* token.
+
 List of parameters:
 
-  * `endpoint`: URL of the store app (UI)
   * `url`: URL of the app to be registered
-  * `title`: title of the app
+  * `name`: name of the app
   * `desc`: description of the app
   * `icon`: URL of an icon for the app
   
 ```JavaScript
 var regParams = {
-  endpoint: 'https://sync-beta.qwantresearch.com',
   url: 'http://example.org',
-  title: 'Example app',
+  name: 'Example app',
   desc: 'A generic app that uses Masq for storage',
-  icon: 'http://example.org/logo.png'
+  icon: 'http://example.org/icon.png'
 }
 
 document.getElementById('registerButton').addEventListener('click', function () {
-  masqStore.registerApp(regParams).then(function (e) {
-    // get the data from the store using masqStore.getAll() 
+  client.addApp(regParams).then(function (token) {
+    // store the authorization token for future use
+    window.localStorage.setItem('token', token)
+    // init your app logic
   })
 })
 ```
 
-## Listen for changes to the store (e.g. sync events)
+## Store app data remotely
 
 ```JavaScript
-document.addEventListener('Sync', function (event) {
-  if (masqStore) {
-    masqStore.getAll().then(function (res) {
-      // update your local app state with data from 'res'
-    })
-  }
+var key = 'hello'
+var appData = {}
+appData.date = Date.now() // 1510847132596
+appData.text = 'Hello World!'
+
+client.setItem(key, appData).then(function () {
+  // success
+}).catch(function (err) {
+  console.log(err)
 })
 ```
 
+
+## Get the remote data for a given key
+
+```JavaScript
+var key = 'hello'
+
+client.getItem(key).then(function (data) {
+  console.log(data) // prints { date: 1510847132596, text: "Hello World!" }
+}).catch(function (err) {
+  console.log(err)
+})
+```
+
+
+## List all key for this app
+
+```JavaScript
+client.listKeys().then(function (keys) {
+  console.log(keys) // prints ['hello']
+})
+```
+
+
+## Delete a specific key
+
+```JavaScript
+var key = 'hello'
+
+client.removeItem(key).then(function () {
+  // success, we have deleted the key "hello"
+})
+```
+
+
 ## License
 
-Apache-2.0
+MIT
