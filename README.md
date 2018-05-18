@@ -39,7 +39,7 @@ var settings = {
 var masqStore = new MasqClient.Client(settings)
 ```
 
-**NOTE:** You can find a fully working example in the [https://github.com/QwantResearch/masq-demos](search demo app).
+**NOTE:** You can find a fully working example in the [search demo app](https://github.com/QwantResearch/masq-demos).
 
 # API
 
