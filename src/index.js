@@ -9,18 +9,17 @@ class Client {
   }
 
   initWS (callBack) {
-    let self = this
     return new Promise((resolve, reject) => {
-      self.ws = new socket.Client(self.conf.socketUrl, self.conf.socketConf)
-      self.ws.onmessage((message) => {
+      this.ws = new socket.Client(this.conf.socketUrl, this.conf.socketConf)
+      this.ws.onmessage((message) => {
         if (message.action && message.action === 'push') {
           callBack(message)
         }
       })
-      self.ws.onerror((error) => {
+      this.ws.onerror((error) => {
         return reject(error)
       })
-      self.ws.onopen(() => {
+      this.ws.onopen(() => {
         return resolve(true)
       })
     })
@@ -31,32 +30,30 @@ class Client {
   }
 
   addApp (data = {}) {
-    let self = this
     return new Promise((resolve, reject) => {
       var request = {
         action: 'addApp',
         data: data
       }
-      self.ws.send(request, (response) => {
+      this.ws.send(request, (response) => {
         if (response.data.status !== 200) {
           return reject(response.data)
         }
-        self.authToken = response.data.authToken
+        this.authToken = response.data.authToken
         return resolve(response.data.authToken)
       })
     })
   }
 
   async setItem (key, value = {}) {
-    let self = this
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
-    if (!self.token()) {
+    if (!this.token()) {
       throw common.generateError(common.ERRORS.NOTOKEN)
     }
     var request = {
-      token: self.token(),
+      token: this.token(),
       action: 'setItem',
       data: {
         key: key,
@@ -64,7 +61,7 @@ class Client {
       }
     }
     return new Promise((resolve, reject) => {
-      self.ws.send(request, (response) => {
+      this.ws.send(request, (response) => {
         if (response.data.status !== 200) {
           return reject(response.data)
         }
@@ -74,22 +71,21 @@ class Client {
   }
 
   async getItem (key) {
-    let self = this
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
-    if (!self.token()) {
+    if (!this.token()) {
       throw common.generateError(common.ERRORS.NOTOKEN)
     }
     var request = {
-      token: self.token(),
+      token: this.token(),
       action: 'getItem',
       data: {
         key: key
       }
     }
     return new Promise((resolve, reject) => {
-      self.ws.send(request, (response) => {
+      this.ws.send(request, (response) => {
         if (response.data.status !== 200) {
           return reject(response.data)
         }
@@ -99,22 +95,21 @@ class Client {
   }
 
   async removeItem (key) {
-    let self = this
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
-    if (!self.token()) {
+    if (!this.token()) {
       throw common.generateError(common.ERRORS.NOTOKEN)
     }
     var request = {
-      token: self.token(),
+      token: this.token(),
       action: 'removeItem',
       data: {
         key: key
       }
     }
     return new Promise((resolve, reject) => {
-      self.ws.send(request, (response) => {
+      this.ws.send(request, (response) => {
         if (response.data.status !== 200) {
           return reject(response.data)
         }
@@ -124,16 +119,15 @@ class Client {
   }
 
   async listKeys () {
-    let self = this
-    if (!self.token()) {
+    if (!this.token()) {
       throw common.generateError(common.ERRORS.NOTOKEN)
     }
     var request = {
-      token: self.token(),
+      token: this.token(),
       action: 'listKeys'
     }
     return new Promise((resolve, reject) => {
-      self.ws.send(request, (response) => {
+      this.ws.send(request, (response) => {
         if (response.data.status !== 200) {
           return reject(response.data)
         }
