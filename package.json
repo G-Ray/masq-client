@@ -32,20 +32,8 @@
     "masq-store": "git+https://github.com/QwantResearch/masq-store.git"
   },
   "standard": {
-    "globals": [
-      "describe",
-      "context",
-      "before",
-      "beforeEach",
-      "after",
-      "afterEach",
-      "it",
-      "expect",
-      "should",
-      "afterAll",
-      "beforeAll",
-      "jest",
-      "define"
+    "env": [
+      "jest"
     ]
   }
 }
