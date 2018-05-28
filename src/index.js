@@ -45,7 +45,7 @@ class Client {
     })
   }
 
-  async setItem (key, value = {}) {
+  setItem (key, value = {}) {
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
@@ -70,7 +70,7 @@ class Client {
     })
   }
 
-  async getItem (key) {
+  getItem (key) {
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
@@ -94,7 +94,7 @@ class Client {
     })
   }
 
-  async removeItem (key) {
+  removeItem (key) {
     if (!key || key.length === 0) {
       throw common.generateError(common.ERRORS.NOVALUE)
     }
@@ -118,7 +118,7 @@ class Client {
     })
   }
 
-  async listKeys () {
+  listKeys () {
     if (!this.token()) {
       throw common.generateError(common.ERRORS.NOTOKEN)
     }

@@ -92,16 +92,20 @@ describe('Client lib', async () => {
 
   it('should fail to setItem if no key is provided', async () => {
     expect.assertions(1)
-    await MasqClient.setItem().catch(err => {
+    try {
+      await MasqClient.setItem()
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOVALUE)
-    })
+    }
   })
 
   it('should fail to getItem if no key is provided', async () => {
     expect.assertions(1)
-    await MasqClient.getItem().catch(err => {
+    try {
+      await MasqClient.getItem()
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOVALUE)
-    })
+    }
   })
 
   it('should fail to getItem if it does not exist', async () => {
@@ -124,69 +128,86 @@ describe('Client lib', async () => {
 
   it('should fail to deleteItem without a key', async () => {
     expect.assertions(1)
-    await MasqClient.removeItem().catch(err => {
+    try {
+      await MasqClient.removeItem()
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOVALUE)
-    })
+    }
   })
 
   it('should fail to delete inexistent item', async () => {
     expect.assertions(2)
-    await MasqClient.removeItem('bar').catch(err => {
+    try {
+      await MasqClient.removeItem('bar')
+    } catch (err) {
       expect(err.status).toEqual(500)
       expect(err.name).toBe(common.ERRORS.NOVALUE)
-    })
+    }
   })
 
   it('should successfully listItems', async () => {
     await MasqClient.setItem('foo', data)
     const resp = await MasqClient.listKeys()
+    console.log(resp)
     expect(resp).toEqual(['foo'])
   })
 
   it('should fail to getItem if token expired', async () => {
     expect.assertions(2)
     await store.profileStore.setItem('tokenList', {})
-    await MasqClient.getItem('foo').catch(err => {
+    try {
+      await MasqClient.getItem('foo')
+    } catch (err) {
       expect(err.status).toEqual(403)
       expect(err.name).toBe(common.ERRORS.NOTAUTHORIZED)
-    })
+    }
   })
 
   it('should fail to setItem if token expired', async () => {
     expect.assertions(2)
-    await MasqClient.setItem('foo', {}).catch(err => {
+    try {
+      await MasqClient.setItem('foo', {})
+    } catch (err) {
       expect(err.status).toEqual(403)
       expect(err.name).toBe(common.ERRORS.NOTAUTHORIZED)
-    })
+    }
   })
 
   it('should fail to setItem if no token exists', async () => {
     expect.assertions(1)
     MasqClient.authToken = null
-    await MasqClient.setItem('foo').catch(err => {
+    try {
+      await MasqClient.setItem('foo')
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOTOKEN)
-    })
+    }
   })
 
   it('should fail to getItem if no token exists', async () => {
     expect.assertions(1)
-    await MasqClient.getItem('foo').catch(err => {
+    try {
+      await MasqClient.getItem('foo')
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOTOKEN)
-    })
+    }
   })
 
   it('should fail to removeItem if no token exists', async () => {
     expect.assertions(1)
-    await MasqClient.removeItem('foo').catch(err => {
+    try {
+      await MasqClient.removeItem('foo')
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOTOKEN)
-    })
+    }
   })
 
   it('should fail to listKeys if no token exists', async () => {
     expect.assertions(1)
-    await MasqClient.listKeys().catch(err => {
+    try {
+      await MasqClient.listKeys()
+    } catch (err) {
       expect(err.name).toBe(common.ERRORS.NOTOKEN)
-    })
+    }
   })
 
   it('should be able to re-register the app for a new token', async () => {
@@ -200,10 +221,12 @@ describe('Client lib', async () => {
     conf.authToken = 'foo'
     MasqClient = new Client(conf)
     await expect(MasqClient.initWS(pushCallback)).resolves.toBe(true)
-    await MasqClient.getItem('foo').catch(err => {
+    try {
+      await MasqClient.getItem('foo')
+    } catch (err) {
       expect(err.status).toEqual(403)
       expect(err.name).toBe(common.ERRORS.NOTAUTHORIZED)
-    })
+    }
   })
 
   it('should be able to reuse the token', async () => {
